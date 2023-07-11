@@ -1,0 +1,20 @@
+{
+  "name": "did-web-jwk-server",
+  "description": "Serves an existing PEM certificate as DID web verification method.",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node --transpile-only src/index.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-jose": "^2.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node-jose": "^1.1.10"
+  }
+}

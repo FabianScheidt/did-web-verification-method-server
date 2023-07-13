@@ -52,6 +52,7 @@ function getCert(req: Request, res: Response): void {
 
 const app = express();
 app.set("json spaces", 2);
+app.set("trust proxy", true);
 app.get("/**/did.json", getJwksDid);
 app.get("/**/certificate-chain.pem", getCert);
 app.listen(PORT, () => {

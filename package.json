@@ -1,6 +1,6 @@
 {
-  "name": "did-web-jwk-server",
-  "description": "Serves an existing PEM certificate as DID web verification method.",
+  "name": "did-web-verification-method-server",
+  "description": "Serves an existing PEM certificate as did:web verification method.",
   "version": "1.0.0",
   "main": "index.ts",
   "license": "MIT",

@@ -26,6 +26,7 @@ for (const rootCert of tls.rootCertificates) {
 function getJwksDid(req: Request, res: Response): void {
   JWK.asKey(CERT, "pem").then((result) => {
     const key = result.toJSON();
+    const kid = 'kid' in key ? key.kid : 'key'
 
     const pathSegments = req.path.split("/");
     pathSegments.shift();
@@ -61,11 +62,12 @@ function getJwksDid(req: Request, res: Response): void {
       id: did,
       verificationMethod: [
         {
-          id: did,
+          id: `${ did }#${ kid }`,
           type: "JsonWebKey2020",
           controller: did,
           publicKeyJwk: {
             ...key,
+            kid,
             alg,
             x5u,
           },

@@ -54,11 +54,13 @@ function getJwksDid(req: Request, res: Response): void {
     // Assemble DID document
     // https://www.w3.org/TR/did-core/#verification-methods
     const payload = {
-      "@context": ["https://www.w3.org/ns/did/v1"],
+      "@context": [
+          "https://www.w3.org/ns/did/v1",
+          "https://w3id.org/security/suites/jws-2020/v1"
+      ],
       id: did,
       verificationMethod: [
         {
-          "@context": "https://w3id.org/security/suites/jws-2020/v1",
           id: did,
           type: "JsonWebKey2020",
           controller: did,

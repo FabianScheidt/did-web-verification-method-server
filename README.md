@@ -15,7 +15,7 @@ The DID document will be exposed on any valid did:web URL. The certificate chain
 - `did:web:example.com` -> https://example.com/.well-known/did.json
 - `did:web:example.com:hello:world` -> https://example.com/hello/world/did.json
 
-## Configuration Option
+## Configuration Options
 
 The service is configured via environment variables.
 
@@ -24,3 +24,11 @@ The service is configured via environment variables.
 | `CERTIFICATE`          | PEM-formatted certificate chain (required)                                 |
 | `PORT`                 | Port to expose the service (defaults to 3000)                              |
 | `ADD_ROOT_CERTIFICATE` | Enable to add root certificate to the certificate chain (defaults to true) |
+
+## Deployment
+
+If you use Docker, there is a prebuilt image available, which is kept up to date with this repository:
+[fabisch/did-web-verification-method-server:latest](https://hub.docker.com/r/fabisch/did-web-verification-method-server)
+
+If you are looking to deploy this on Kubernetes, where you already have your TLS certificate stored in a secret, you
+may find [this gist](https://gist.github.com/FabianScheidt/dd344566715fa82c7db37060ac1e5bea) useful. 

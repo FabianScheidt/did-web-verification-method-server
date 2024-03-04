@@ -1,0 +1,28 @@
+name: Check Code Quality
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Project Dependencies
+        run: yarn install
+
+      - name: Check Code Format
+        run: npx prettier --check .
+
+      - name: Lint Code
+        run: yarn lint

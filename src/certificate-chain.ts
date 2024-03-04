@@ -5,10 +5,22 @@ import * as tls from "tls";
 export function getCertificateChainHandler(cert: string, addRootCert: boolean) {
   // Build list of available root certificates
   const ROOT_CERTS: pki.Certificate[] = [];
+  const certParseErrors: Set<string> = new Set();
   for (const rootCert of tls.rootCertificates) {
     try {
       ROOT_CERTS.push(pki.certificateFromPem(rootCert));
-    } catch (e) {}
+    } catch (e: unknown) {
+      if (!(e instanceof Error)) {
+        throw e;
+      }
+      certParseErrors.add(e.message);
+    }
+  }
+  if (certParseErrors.size > 0) {
+    console.warn(
+      "Not all known root certificates were parsed. This may not be an issue:" +
+        ["", ...certParseErrors].join("\n -> "),
+    );
   }
 
   // Return Handler

@@ -2,7 +2,14 @@ import { Request, Response } from "express";
 import { pki } from "node-forge";
 import * as tls from "tls";
 
-export function getCertificateChainHandler(cert: string, addRootCert: boolean) {
+export function getCertificateChain(
+  cert: string,
+  addRootCert: boolean,
+): string {
+  if (!addRootCert) {
+    return cert;
+  }
+
   // Build list of available root certificates
   const ROOT_CERTS: pki.Certificate[] = [];
   const certParseErrors: Set<string> = new Set();
@@ -23,32 +30,30 @@ export function getCertificateChainHandler(cert: string, addRootCert: boolean) {
     );
   }
 
-  // Return Handler
+  // Extract certificates
+  const certsRegex =
+    /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g;
+  const certMatches = certsRegex[Symbol.matchAll](cert);
+  const certs = [...certMatches].map((c) => c[0]);
+
+  // Iterate over certificates and try to find a matching root certificate
+  const outputCerts: string[] = [];
+  for (const cert of certs) {
+    outputCerts.push(cert);
+    const certObj = pki.certificateFromPem(cert);
+    const rootCert = ROOT_CERTS.find((r) => r.issued(certObj));
+    if (rootCert) {
+      outputCerts.push(pki.certificateToPem(rootCert));
+      break;
+    }
+  }
+
+  return outputCerts.join("\n");
+}
+
+export function getCertificateChainHandler(cert: string, addRootCert: boolean) {
+  const payload = getCertificateChain(cert, addRootCert);
   return (req: Request, res: Response): void => {
-    if (!addRootCert) {
-      res.header("Content-Type", "application/x-pem-file").send(cert);
-      return;
-    }
-
-    // Extract certificates
-    const certsRegex =
-      /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g;
-    const certMatches = certsRegex[Symbol.matchAll](cert);
-    const certs = [...certMatches].map((c) => c[0]);
-
-    // Iterate over certificates and try to find a matching root certificate
-    const outputCerts: string[] = [];
-    for (const cert of certs) {
-      outputCerts.push(cert);
-      const certObj = pki.certificateFromPem(cert);
-      const rootCert = ROOT_CERTS.find((r) => r.issued(certObj));
-      if (rootCert) {
-        outputCerts.push(pki.certificateToPem(rootCert));
-        break;
-      }
-    }
-
-    const payload = outputCerts.join("\n");
     res.header("Content-Type", "application/x-pem-file").send(payload);
   };
 }

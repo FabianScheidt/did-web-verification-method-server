@@ -19,10 +19,10 @@ jobs:
           node-version: 20
 
       - name: Install Project Dependencies
-        run: yarn install
+        run: npm install
 
       - name: Check Code Format
         run: npx prettier --check .
 
       - name: Lint Code
-        run: yarn lint
+        run: npm run lint

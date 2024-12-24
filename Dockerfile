@@ -2,11 +2,11 @@ FROM node:20 AS build-env
 
 WORKDIR /app/
 
-COPY package.json yarn.lock /app/
-RUN yarn install
+COPY package.json package-lock.json /app/
+RUN npm install
 
 COPY ./ /app/
-RUN yarn build
+RUN npm run build
 
 FROM gcr.io/distroless/nodejs20-debian11
 WORKDIR /app/

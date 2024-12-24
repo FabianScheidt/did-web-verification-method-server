@@ -1,13 +1,17 @@
 {
   "name": "@fabianscheidt/did-web-verification-method-server",
   "description": "Serves an existing PEM certificate as did:web verification method.",
-  "version": "1.4.3",
+  "version": "0.0.0-PLACEHOLDER",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "/dist"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FabianScheidt/did-web-verification-method-server.git"
+  },
   "scripts": {
     "start": "ts-node --transpile-only src/main.ts",
     "format": "prettier --write .",

@@ -26,3 +26,6 @@ jobs:
 
       - name: Lint Code
         run: npm run lint
+
+      - name: Run Tests
+        run: npm run test

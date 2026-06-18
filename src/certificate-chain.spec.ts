@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import * as assert from "node:assert/strict";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { pki } from "node-forge";
+import * as crypto from "crypto";
 import { getCertificateChain } from "./certificate-chain";
 
 const exampleCert = readFileSync(
@@ -28,8 +28,11 @@ describe("getCertificateChain", () => {
       result.match(
         /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g,
       ) ?? [];
-    const lastCert = pki.certificateFromPem(certs[certs.length - 1]);
-    const cn = lastCert.subject.getField("CN")?.value;
+    const lastCert = new crypto.X509Certificate(certs[certs.length - 1]);
+    const cn = lastCert.subject
+      .split("\n")
+      .find((l) => l.startsWith("CN="))
+      ?.slice(3);
     assert.strictEqual(cn, "Sectigo Public Server Authentication Root R46");
   });
 });

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { pki } from "node-forge";
+import * as crypto from "crypto";
 import * as tls from "tls";
 
 export function getCertificateChain(
@@ -10,26 +10,6 @@ export function getCertificateChain(
     return cert;
   }
 
-  // Build list of available root certificates
-  const ROOT_CERTS: pki.Certificate[] = [];
-  const certParseErrors: Set<string> = new Set();
-  for (const rootCert of tls.rootCertificates) {
-    try {
-      ROOT_CERTS.push(pki.certificateFromPem(rootCert));
-    } catch (e: unknown) {
-      if (!(e instanceof Error)) {
-        throw e;
-      }
-      certParseErrors.add(e.message);
-    }
-  }
-  if (certParseErrors.size > 0) {
-    console.warn(
-      "Not all known root certificates were parsed. This may not be an issue:" +
-        ["", ...certParseErrors].join("\n -> "),
-    );
-  }
-
   // Extract certificates
   const certsRegex =
     /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g;
@@ -38,12 +18,14 @@ export function getCertificateChain(
 
   // Iterate over certificates and try to find a matching root certificate
   const outputCerts: string[] = [];
-  for (const cert of certs) {
-    outputCerts.push(cert);
-    const certObj = pki.certificateFromPem(cert);
-    const rootCert = ROOT_CERTS.find((r) => r.issued(certObj));
-    if (rootCert) {
-      outputCerts.push(pki.certificateToPem(rootCert));
+  for (const certPem of certs) {
+    outputCerts.push(certPem);
+    const certObj = new crypto.X509Certificate(certPem);
+    const match = tls.rootCertificates.find((rootCertPem) =>
+      certObj.checkIssued(new crypto.X509Certificate(rootCertPem)),
+    );
+    if (match) {
+      outputCerts.push(match);
       break;
     }
   }

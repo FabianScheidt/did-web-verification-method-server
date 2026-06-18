@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { JWK } from "node-jose";
+import * as crypto from "crypto";
 
 export interface JsonWebKey2020VerificationMethod {
   id: string;
@@ -23,9 +23,13 @@ export async function getDidDocument(
   cert: string,
   req: { protocol: string; hostname: string; path: string },
 ): Promise<DidDocument<[JsonWebKey2020VerificationMethod]>> {
-  const jwk = await JWK.asKey(cert, "pem");
-  const key = jwk.toJSON();
-  const kid = "kid" in key ? String(key.kid) : "key";
+  const firstPem = cert.match(
+    /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/,
+  )![0];
+  const x509 = new crypto.X509Certificate(firstPem);
+  const key = x509.publicKey.export({ format: "jwk" });
+  const kid = getKid(x509);
+  const x5t = getX5t(x509);
 
   const pathSegments = req.path.split("/");
   pathSegments.shift();
@@ -49,7 +53,7 @@ export async function getDidDocument(
     RSA: "PS256",
     EC: "ES256",
     OKP: "EdDSA",
-  }[jwk.kty];
+  }[key.kty ?? "RSA"];
 
   // Assemble DID document
   // https://www.w3.org/TR/did-core/#verification-methods
@@ -67,6 +71,7 @@ export async function getDidDocument(
         publicKeyJwk: {
           ...key,
           kid,
+          x5t,
           alg,
           x5u,
         },
@@ -81,4 +86,19 @@ export function getDidDocumentHandler(cert: string) {
       res.header("Content-Type", "application/json").send(payload);
     });
   };
+}
+
+function getKid(x509: crypto.X509Certificate): string {
+  // kid = CN from the certificate subject
+  return (
+    x509.subject
+      .split("\n")
+      .find((l) => l.startsWith("CN="))
+      ?.slice(3) ?? "key"
+  );
+}
+
+function getX5t(x509: crypto.X509Certificate): string {
+  // x5t = base64url SHA-1 thumbprint of the DER-encoded certificate (RFC 7517 §4.8)
+  return crypto.createHash("sha1").update(x509.raw).digest("base64url");
 }

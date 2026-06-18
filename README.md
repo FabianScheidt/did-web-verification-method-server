@@ -26,6 +26,14 @@ The service is configured via environment variables.
 | `PORT`                 | Port to expose the service (defaults to 3000)                              |
 | `ADD_ROOT_CERTIFICATE` | Enable to add root certificate to the certificate chain (defaults to true) |
 
+## Running Tests
+
+You can execute the available unit tests by running:
+
+```
+npm run test
+```
+
 ## Deployment
 
 If you use Docker, there is a prebuilt image available, which is kept up to date with this repository:
